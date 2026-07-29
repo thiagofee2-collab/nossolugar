@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para Você</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* =======================================================
+     GUIA RÁPIDO DE PERSONALIZAÇÃO — leia isto primeiro!
+     1) Troque "[Nome dela]" pelo nome dela (busque por [Nome dela])
+     2) Troque "[Seu nome]" pelo seu nome (busque por [Seu nome])
+     3) FOTOS: procure por "CUSTOMIZE-FOTO" — troque o valor vazio
+        entre aspas por o caminho/link da sua foto, ex:
+        img: "https://meusite.com/foto1.jpg"  ou  img: "fotos/foto1.jpg"
+     4) TEXTO DA CARTA: procure "CUSTOMIZE-CARTA"
+     5) MOTIVOS: procure "CUSTOMIZE-MOTIVOS" e edite a lista
+     6) SENHA: procure "CUSTOMIZE-SENHA" e defina a senha certa
+     7) VÍDEO: procure "CUSTOMIZE-VIDEO" e coloque o link do vídeo
+     ======================================================= */
+
+  :root{
+    --ivory: #FBF6F2;
+    --paper: #FFFDFB;
+    --plum: #4A2545;
+    --plum-deep: #331A30;
+    --rose: #C9707D;
+    --rose-soft: #E8B4BC;
+    --gold: #C9A15F;
+    --ink: #3A2130;
+    --shadow: rgba(74, 37, 69, 0.18);
+    --font-script: 'Dancing Script', cursive;
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Poppins', sans-serif;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
+
+  ::selection{ background: var(--rose-soft); color: var(--plum-deep); }
+
+  /* subtle paper texture */
+  body::before{
+    content:"";
+    position: fixed; inset:0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(74,37,69,0.045) 1px, transparent 0);
+    background-size: 22px 22px;
+    pointer-events:none;
+    z-index: 0;
+  }
+
+  a{ color: inherit; text-decoration: none; }
+
+  /* ---------- TELA DE SENHA ---------- */
+  #lockScreen{
+    position: fixed; inset:0; z-index: 1000;
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(201,161,95,0.16), transparent 55%),
+      radial-gradient(ellipse at 85% 80%, rgba(201,112,125,0.2), transparent 55%),
+      var(--plum-deep);
+    display:flex; align-items:center; justify-content:center;
+    padding: 24px;
+    transition: opacity .6s ease, visibility .6s ease;
+  }
+  #lockScreen.hidden{ opacity: 0; visibility: hidden; pointer-events: none; }
+  .lock-box{
+    background: var(--paper);
+    max-width: 380px;
+    width: 100%;
+    padding: clamp(32px, 6vw, 52px) clamp(26px, 5vw, 40px);
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    animation: unfold .6s ease;
+  }
+  .lock-icon{ font-size: 1.8rem; color: var(--rose); margin-bottom: 10px; }
+  .lock-title{
+    font-family: var(--font-script);
+    font-size: 2.1rem;
+    color: var(--plum-deep);
+    margin-bottom: 6px;
+  }
+  .lock-sub{
+    font-family: var(--font-body);
+    font-weight: 300;
+    font-size: 0.9rem;
+    color: var(--plum);
+    opacity: 0.75;
+    margin-bottom: 26px;
+    line-height: 1.6;
+  }
+  .lock-input{
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 30px;
+    border: 1.5px solid var(--rose-soft);
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    text-align: center;
+    letter-spacing: 0.05em;
+    outline: none;
+    transition: border-color .2s ease;
+  }
+  .lock-input:focus{ border-color: var(--rose); }
+  .lock-input.shake{ animation: shake .4s ease; border-color: var(--rose); }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-8px); }
+    40%{ transform: translateX(8px); }
+    60%{ transform: translateX(-6px); }
+    80%{ transform: translateX(6px); }
+  }
+  .lock-error{
+    min-height: 1.2em;
+    font-size: 0.78rem;
+    color: var(--rose);
+    margin-top: 10px;
+  }
+  .lock-hint-toggle{
+    margin-top: 18px;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+    background:none; border:none; cursor:pointer;
+    text-decoration: underline;
+    font-family: var(--font-body);
+  }
+  .lock-hint-text{
+    margin-top: 10px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--plum);
+    display:none;
+  }
+  .lock-hint-text.show{ display:block; }
+  .lock-submit{ margin-top: 20px; }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position: fixed; top:0; left:0; right:0;
+    z-index: 100;
+    display:flex; justify-content:center; gap: clamp(10px,3vw,32px);
+    padding: 16px 12px;
+    background: rgba(251,246,242,0.85);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(74,37,69,0.08);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex-wrap: wrap;
+  }
+  nav a{
+    color: var(--plum);
+    opacity: 0.65;
+    transition: opacity .25s ease;
+    white-space: nowrap;
+  }
+  nav a:hover{ opacity: 1; }
+
+  section{
+    position: relative;
+    z-index: 1;
+    padding: 120px 6vw 100px;
+    min-height: 100svh;
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+
+  .eyebrow{
+    font-family: var(--font-script);
+    font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+    color: var(--rose);
+    margin-bottom: 6px;
+  }
+  h2.section-title{
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--plum-deep);
+    margin-bottom: 14px;
+  }
+  .section-sub{
+    max-width: 560px;
+    color: var(--plum);
+    opacity: 0.75;
+    font-weight: 300;
+    margin-bottom: 48px;
+    line-height: 1.6;
+  }
+
+  /* ---------- HERO ---------- */
+  #hero{
+    min-height: 100svh;
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(201,161,95,0.14), transparent 55%),
+      radial-gradient(ellipse at 85% 80%, rgba(201,112,125,0.16), transparent 55%);
+  }
+  .heart-field{
+    position:absolute; inset:0; overflow:hidden; z-index:0; pointer-events:none;
+  }
+  .floating-heart{
+    position:absolute;
+    bottom: -10%;
+    font-size: 1.4rem;
+    color: var(--rose-soft);
+    opacity: 0.55;
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp{
+    to{ transform: translateY(-115vh) rotate(20deg); opacity:0; }
+  }
+
+  .hero-content{ position:relative; z-index:2; }
+  .hero-eyebrow{
+    font-family: var(--font-body);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: var(--gold);
+    margin-bottom: 22px;
+  }
+  .hero-title{
+    font-family: var(--font-script);
+    font-weight: 700;
+    font-size: clamp(3rem, 10vw, 6.5rem);
+    color: var(--plum-deep);
+    line-height: 1;
+  }
+  .hero-title span{ color: var(--rose); }
+  .hero-desc{
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.05rem, 2vw, 1.3rem);
+    color: var(--plum);
+    max-width: 480px;
+    margin: 26px auto 0;
+    line-height: 1.7;
+  }
+  .scroll-cue{
+    margin-top: 60px;
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--plum);
+    opacity: 0.55;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .scroll-cue .line{ width:1px; height:34px; background: var(--rose); animation: pulseLine 1.8s ease-in-out infinite; }
+  @keyframes pulseLine{ 0%,100%{ opacity:.3; } 50%{ opacity:1; } }
+
+  /* ---------- MEMORY GAME ---------- */
+  #jogo{ background: var(--paper); }
+  .memory-board{
+    display: grid;
+    grid-template-columns: repeat(4, minmax(70px, 110px));
+    gap: clamp(10px, 2vw, 18px);
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+  .card{
+    aspect-ratio: 3/4;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+  .card-inner{
+    position: relative;
+    width:100%; height:100%;
+    transition: transform 0.55s cubic-bezier(.4,.2,.2,1);
+    transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner, .card.matched .card-inner{ transform: rotateY(180deg); }
+  .card-face{
+    position:absolute; inset:0;
+    border-radius: 10px;
+    backface-visibility: hidden;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 6px 16px var(--shadow);
+    overflow:hidden;
+  }
+  .card-back{
+    background: linear-gradient(135deg, var(--plum), var(--plum-deep));
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .card-back::after{
+    content: "♥";
+    color: rgba(232,180,188,0.5);
+    font-size: 1.6rem;
+  }
+  .card-front{
+    transform: rotateY(180deg);
+    background: var(--rose-soft);
+    border: 3px solid var(--paper);
+    flex-direction: column;
+    gap: 4px;
+    color: var(--plum-deep);
+  }
+  .card-front img{ width:100%; height:100%; object-fit:cover; }
+  .card-front .fallback-icon{ font-size: 1.6rem; }
+  .card-front .fallback-label{ font-size: 0.55rem; font-family: var(--font-body); opacity:.7; padding: 0 4px; text-align:center; }
+  .card.matched .card-front{ border-color: var(--gold); }
+
+  .game-status{
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--plum);
+    margin-bottom: 20px;
+    min-height: 1.4em;
+  }
+  .btn{
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--plum-deep);
+    color: var(--ivory);
+    border: none;
+    padding: 13px 30px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: transform .2s ease, background .2s ease;
+  }
+  .btn:hover{ transform: translateY(-2px); background: var(--rose); }
+
+  .win-banner{
+    font-family: var(--font-script);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    color: var(--rose);
+    margin-top: 18px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all .5s ease;
+  }
+  .win-banner.show{ opacity:1; transform: translateY(0); }
+
+  /* ---------- GALLERY ---------- */
+  #galeria{ background: var(--ivory); }
+  .gallery-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 34px 24px;
+    max-width: 1000px;
+    width:100%;
+  }
+  .polaroid{
+    background: var(--paper);
+    padding: 14px 14px 46px;
+    box-shadow: 0 10px 24px var(--shadow);
+    transition: transform .3s ease, box-shadow .3s ease;
+    position:relative;
+  }
+  .polaroid:nth-child(odd){ transform: rotate(-3deg); }
+  .polaroid:nth-child(even){ transform: rotate(2.5deg); }
+  .polaroid:hover{ transform: rotate(0deg) scale(1.04); box-shadow: 0 16px 30px var(--shadow); z-index: 5; }
+  .polaroid .frame{
+    width:100%; aspect-ratio: 1/1;
+    background: linear-gradient(135deg, var(--rose-soft), #f3d9dc);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--plum);
+    font-size: 0.7rem;
+    text-align:center;
+    overflow:hidden;
+  }
+  .polaroid .frame img{ width:100%; height:100%; object-fit:cover; }
+  .polaroid .caption{
+    font-family: var(--font-script);
+    font-size: 1.15rem;
+    color: var(--plum-deep);
+    text-align:center;
+    margin-top: 12px;
+  }
+  .tape{
+    position:absolute; top:-10px; left: 50%; transform: translateX(-50%) rotate(-2deg);
+    width: 60px; height: 22px;
+    background: rgba(201,161,95,0.35);
+    border: 1px solid rgba(201,161,95,0.4);
+  }
+
+  /* ---------- VÍDEO ---------- */
+  #video{ background: var(--paper); }
+  .video-frame{
+    width: min(640px, 90vw);
+    background: var(--plum-deep);
+    border-radius: 14px;
+    padding: 10px;
+    box-shadow: 0 20px 44px var(--shadow);
+  }
+  .video-frame video{
+    width: 100%;
+    display:block;
+    border-radius: 8px;
+    background: #000;
+    max-height: 70vh;
+  }
+  .video-placeholder{
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--rose-soft), #f3d9dc);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: 10px;
+    color: var(--plum-deep);
+    text-align:center;
+    padding: 20px;
+  }
+  .video-placeholder .icon{ font-size: 2rem; }
+  .video-placeholder .txt{ font-family: var(--font-body); font-size: 0.82rem; max-width: 320px; opacity: .8; }
+
+  /* ---------- CARTA ---------- */
+  #carta{ background: var(--paper); }
+  .envelope-wrap{ perspective: 1200px; }
+  .envelope{
+    width: min(340px, 80vw);
+    height: 220px;
+    position: relative;
+    cursor: pointer;
+  }
+  .envelope-body{
+    position:absolute; inset:0;
+    background: var(--plum);
+    border-radius: 6px;
+    box-shadow: 0 14px 30px var(--shadow);
+  }
+  .envelope-flap{
+    position:absolute; top:0; left:0; width:100%; height:50%;
+    background: var(--rose);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top;
+    transition: transform .6s cubic-bezier(.4,.2,.2,1);
+    z-index: 3;
+  }
+  .envelope.open .envelope-flap{ transform: rotateX(180deg); }
+  .envelope-heart{
+    position:absolute; top:38%; left:50%; transform: translate(-50%,-50%);
+    color: var(--gold); font-size: 1.6rem; z-index: 2;
+  }
+  .envelope-hint{
+    margin-top: 18px;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--plum);
+    opacity: 0.6;
+  }
+  .letter-paper{
+    max-width: 560px;
+    background: var(--paper);
+    margin-top: 40px;
+    padding: clamp(28px, 5vw, 54px);
+    box-shadow: 0 18px 40px var(--shadow);
+    border-radius: 4px;
+    display:none;
+    text-align:left;
+    position: relative;
+  }
+  .letter-paper.show{ display:block; animation: unfold .6s ease; }
+  @keyframes unfold{ from{ opacity:0; transform: translateY(20px) scale(.97);} to{ opacity:1; transform:none; } }
+  .letter-paper::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:4px;
+    background: linear-gradient(90deg, var(--rose), var(--gold));
+  }
+  .letter-greeting{
+    font-family: var(--font-script);
+    font-size: 2rem;
+    color: var(--rose);
+    margin-bottom: 18px;
+  }
+  .letter-body{
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--ink);
+    white-space: pre-line;
+  }
+  .letter-sign{
+    font-family: var(--font-script);
+    font-size: 1.6rem;
+    color: var(--plum);
+    margin-top: 24px;
+    text-align: right;
+  }
+
+  /* ---------- MOTIVOS ---------- */
+  #motivos{ background: var(--ivory); }
+  .reasons-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    max-width: 900px;
+    width: 100%;
+  }
+  .reason-card{
+    background: var(--paper);
+    border-radius: 14px;
+    padding: 26px 22px;
+    box-shadow: 0 8px 20px var(--shadow);
+    text-align: left;
+    border-left: 3px solid var(--rose-soft);
+    transition: border-color .25s ease, transform .25s ease;
+  }
+  .reason-card:hover{ border-left-color: var(--gold); transform: translateY(-4px); }
+  .reason-num{
+    font-family: var(--font-script);
+    font-size: 1.5rem;
+    color: var(--rose);
+    display:block;
+    margin-bottom: 6px;
+  }
+  .reason-text{
+    font-family: var(--font-body);
+    font-weight: 300;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding: 60px 6vw 50px;
+    text-align:center;
+    background: var(--plum-deep);
+    color: var(--rose-soft);
+  }
+  footer .foot-script{
+    font-family: var(--font-script);
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+  }
+  footer .foot-sub{
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 480px){
+    .memory-board{ grid-template-columns: repeat(3, minmax(64px, 1fr)); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon">♥</div>
+    <div class="lock-title">Antes de entrar...</div>
+    <p class="lock-sub">Este cantinho é só nosso. Digite a senha para entrar.</p>
+    <input type="password" id="lockInput" class="lock-input" placeholder="Digite a senha" autocomplete="off">
+    <div class="lock-error" id="lockError"></div>
+    <div class="lock-submit"><button class="btn" id="lockSubmit">Entrar</button></div>
+    <button class="lock-hint-toggle" id="lockHintToggle">precisa de uma dica?</button>
+    <div class="lock-hint-text" id="lockHintText">Dica: o dia da pessoa mais importante da minha vida.</div>
+  </div>
+</div>
+
+<nav>
+  <a href="#hero">Início</a>
+  <a href="#jogo">Jogo da Memória</a>
+  <a href="#galeria">Nossos Momentos</a>
+  <a href="#video">Vídeo</a>
+  <a href="#carta">Carta</a>
+  <a href="#motivos">Por Que Te Amo</a>
+</nav>
+
+<!-- ================= HERO ================= -->
+<section id="hero">
+  <div class="heart-field" id="heartField"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">um cantinho só nosso</div>
+    <h1 class="hero-title">Para <span>a mulher da minha vida</span></h1>
+    <p class="hero-desc">Fiz esse site para tentar te animar um pouco, e demonstrar um pouco do que sinto — nossas fotos, um joguinho(quase não gosta de jogar kkkkk) e todos os motivos que me fazem te amar, todos os dias.</p>
+    <div class="scroll-cue"><span class="line"></span>role para baixo</div>
+  </div>
+</section>
+
+<!-- ================= JOGO DA MEMÓRIA ================= -->
+<section id="jogo">
+  <div class="eyebrow">vamos brincar?</div>
+  <h2 class="section-title">Jogo da Memória</h2>
+  <p class="section-sub">Encontre os pares de alguns momentos nossos. Clique em duas cartas para virá-las.</p>
+
+  <div class="memory-board" id="memoryBoard"></div>
+  <div class="game-status" id="gameStatus">Toque em uma carta para começar</div>
+  <button class="btn" id="restartBtn">Jogar novamente</button>
+  <div class="win-banner" id="winBanner">Você encontrou todos os nossos momentos! ♥</div>
+</section>
+
+<!-- ================= GALERIA ================= -->
+<section id="galeria">
+  <div class="eyebrow">nossa coleção</div>
+  <h2 class="section-title">Nossos Momentos</h2>
+  <p class="section-sub">Alguns momentos que guardo com carinho.</p>
+
+  <div class="gallery-grid" id="galleryGrid"></div>
+</section>
+
+<!-- ================= VÍDEO ================= -->
+<section id="video">
+  <div class="eyebrow">movimento e som</div>
+  <h2 class="section-title">Nosso Vídeo</h2>
+  <p class="section-sub">Um momento nosso, gravado para não esquecer.</p>
+
+  <div class="video-frame" id="videoFrame"></div>
+</section>
+
+<!-- ================= CARTA ================= -->
+<section id="carta">
+  <div class="eyebrow">para você ler devagar</div>
+  <h2 class="section-title">Uma Carta</h2>
+
+  <div class="envelope-wrap">
+    <div class="envelope" id="envelope">
+      <div class="envelope-flap"></div>
+      <div class="envelope-heart">♥</div>
+      <div class="envelope-body"></div>
+    </div>
+    <div class="envelope-hint" id="envelopeHint">toque no envelope para abrir</div>
+  </div>
+
+  <div class="letter-paper" id="letterPaper">
+    <div class="letter-greeting">Minha princesa,</div>
+    <div class="letter-body" id="letterBody">Cada dia ao seu lado é um presente de Deus, eu penso em você e meu coração transborda de felicidade. Você é a razão dos meus sorrisos mais sinceros, a minha paz, é tudo, eu nunca fui capaz de sonhar tão grande assim, Deus caprichou muito quando colocou essa mulher maravilhosa que você é na minha vida, o zói já tá cheio de água (não sou chorão kkkkk, é que te amo tanto que as vezes transborda).
+
+Quem diria que a menina que eu ofereci o lápis verde para pintar a bandeira do Brasil, e nem falou um obrigado, depois alguns anos de seria a pessoa mais importante da minha vida, é louco pensar que sempre estivemos muito perto um do outro, mas tão longe ao mesmo tempo, e Deus nos uniu no momento que mais precisavamos, e foi/é a melhor coisa que aconteceu na minha vida. Tenho a melhor pessoa desse mundo me chamando de amor, me fazendo feliz, sou loucamente apaixonda por ti, e amo absolutamente tudo em você. 
+Penso no futuro, e só consigo imaginar nós dois juntos, construindo a nossa história. Quero casar com você, dividir a vida inteira ao seu lado. Quero ter filhos com você, ver o brilho nos seus olhos ao segurar nossos pequenos, e te fazer a pessoa mais feliz desse mundo, quero viajar com você, aproveitar a vida ao seu lado.
+
+Prometo que vou dedicar cada segundo para fazer você a pessoa mais feliz deste mundo. Seu sorriso é minha maior conquista, e seu amor, é minha maior preciosidade. Você merece tudo de melhor, e eu quero ser o homem que vai te dar isso todos os dias, vou cuidar você até meu último segundo de vida.
+
+Eu te amo infinitamente, meu amor, você não tem ideia do quanto! Você é a melhor parte da minha vida.   </div>
+    <div class="letter-sign">Com todo o meu amor, seu maior fã</div>
+  </div>
+</section>
+
+<!-- ================= MOTIVOS ================= -->
+<section id="motivos">
+  <div class="eyebrow">uma lista que nunca acaba</div>
+  <h2 class="section-title">Por Que Eu Te Amo</h2>
+  <p class="section-sub">Só alguns motivos — a lista completa não caberia aqui.</p>
+
+  <div class="reasons-grid" id="reasonsGrid"></div>
+</section>
+
+<footer>
+  <div class="foot-script">com amor, seu cafadinho</div>
+  <div class="foot-sub">feito especialmente para você</div>
+</footer>
+
+<script>
+
+const fotosJogo = [
+  { id: 1, img: "", label:  },
+  { id: 2, img: "", label:  },
+  { id: 3, img: "", label:  },
+  { id: 4, img: "", label:  },
+  { id: 5, img: "", label:  },
+  { id: 6, img: "", label:  },
+];
+
+const fotosGaleria = [
+  { img: "", caption: "aquele dia" },
+  { img: "", caption: "sempre juntos" },
+  { img: "", caption: "risadas" },
+  { img: "", caption: "viagem" },
+  { img: "", caption: "meu favorito" },
+  { img: "", caption: "para sempre" },
+];
+
+const senhaCorreta = "1204";
+
+const videoUrl = "";
+
+
+const motivos = [
+  "Porque é a melhor pessoa que já conheci, é muito além do que eu sonhava.",
+  "Seu sorriso falando sobre algo que gosta, e como fica empolgada.",
+  "Você me deixa confortável para seu eu mesmo.",
+  "O jeito que me olha com carinha de apaixonada.",
+  "Porque ao seu lado, tudo fica mais leve.",
+  "Pela paz que você me faz sentir ao seu lado.",
+  "Porque você acredita em mim, até quando eu duvido.",
+  "Por você ser você.",
+];
+
+// ================= TELA DE SENHA =================
+const lockScreen = document.getElementById('lockScreen');
+const lockInput = document.getElementById('lockInput');
+const lockSubmit = document.getElementById('lockSubmit');
+const lockError = document.getElementById('lockError');
+const lockHintToggle = document.getElementById('lockHintToggle');
+const lockHintText = document.getElementById('lockHintText');
+
+function normalizar(str){
+  return str.trim().toLowerCase();
+}
+
+function tentarEntrar(){
+  if(normalizar(lockInput.value) === normalizar(senhaCorreta)){
+    lockScreen.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+  } else {
+    lockError.textContent = 'Senha incorreta, tente de novo.';
+    lockInput.classList.add('shake');
+    setTimeout(()=> lockInput.classList.remove('shake'), 400);
+  }
+}
+
+lockSubmit.addEventListener('click', tentarEntrar);
+lockInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') tentarEntrar();
+});
+lockHintToggle.addEventListener('click', () => {
+  lockHintText.classList.toggle('show');
+});
+lockInput.focus();
+
+// ================= VÍDEO =================
+const videoFrame = document.getElementById('videoFrame');
+if(videoUrl && videoUrl.trim() !== ''){
+  videoFrame.innerHTML = `<video controls preload="metadata" src="${videoUrl}"></video>`;
+} else {
+  videoFrame.innerHTML = `
+    <div class="video-placeholder">
+      <div class="icon">🎬</div>
+      <div class="txt">Nenhum vídeo adicionado ainda. Edite a variável "videoUrl" no código com o link do seu vídeo (.mp4).</div>
+    </div>`;
+}
+
+// ---- corações flutuantes no hero ----
+const heartField = document.getElementById('heartField');
+for(let i=0;i<14;i++){
+  const h = document.createElement('div');
+  h.className = 'floating-heart';
+  h.textContent = '♥';
+  h.style.left = Math.random()*100 + '%';
+  h.style.animationDuration = (10 + Math.random()*10) + 's';
+  h.style.animationDelay = (Math.random()*10) + 's';
+  h.style.fontSize = (1 + Math.random()*1.4) + 'rem';
+  heartField.appendChild(h);
+}
+
+function fotoConteudo(item){
+  if(item.img && item.img.trim() !== ''){
+    return `<img src="${item.img}" alt="${item.label || item.caption || ''}">`;
+  }
+  return `<div class="fallback-icon">♡</div><div class="fallback-label">${item.label || item.caption || 'sua foto aqui'}</div>`;
+}
+
+// ================= JOGO DA MEMÓRIA =================
+const board = document.getElementById('memoryBoard');
+const statusEl = document.getElementById('gameStatus');
+const winBanner = document.getElementById('winBanner');
+let cards = [];
+let flipped = [];
+let matchedCount = 0;
+let lock = false;
+
+function buildDeck(){
+  const deck = [...fotosJogo, ...fotosJogo.map(f => ({...f}))];
+  for(let i = deck.length -1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+}
+
+function renderBoard(){
+  board.innerHTML = '';
+  flipped = [];
+  matchedCount = 0;
+  lock = false;
+  winBanner.classList.remove('show');
+  statusEl.textContent = 'Toque em uma carta para começar';
+  const deck = buildDeck();
+
+  deck.forEach((item, index) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.pairId = item.id;
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-face card-back"></div>
+        <div class="card-face card-front">${fotoConteudo(item)}</div>
+      </div>`;
+    card.addEventListener('click', () => onCardClick(card));
+    board.appendChild(card);
+  });
+}
+
+function onCardClick(card){
+  if(lock || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+  card.classList.add('flipped');
+  flipped.push(card);
+  if(flipped.length === 2){
+    lock = true;
+    const [a,b] = flipped;
+    if(a.dataset.pairId === b.dataset.pairId){
+      setTimeout(()=>{
+        a.classList.add('matched');
+        b.classList.add('matched');
+        flipped = [];
+        lock = false;
+        matchedCount++;
+        statusEl.textContent = 'Encontrou um par! ♥';
+        if(matchedCount === fotosJogo.length){
+          setTimeout(()=>{
+            statusEl.textContent = '';
+            winBanner.classList.add('show');
+          }, 300);
+        }
+      }, 500);
+    } else {
+      statusEl.textContent = 'Quase! Tente de novo.';
+      setTimeout(()=>{
+        a.classList.remove('flipped');
+        b.classList.remove('flipped');
+        flipped = [];
+        lock = false;
+      }, 900);
+    }
+  }
+}
+
+document.getElementById('restartBtn').addEventListener('click', renderBoard);
+renderBoard();
+
+// ================= GALERIA =================
+const galleryGrid = document.getElementById('galleryGrid');
+fotosGaleria.forEach(item => {
+  const card = document.createElement('div');
+  card.className = 'polaroid';
+  card.innerHTML = `
+    <div class="tape"></div>
+    <div class="frame">${fotoConteudo(item)}</div>
+    <div class="caption">${item.caption || ''}</div>`;
+  galleryGrid.appendChild(card);
+});
+
+// ================= CARTA =================
+const envelope = document.getElementById('envelope');
+const letterPaper = document.getElementById('letterPaper');
+const envelopeHint = document.getElementById('envelopeHint');
+envelope.addEventListener('click', () => {
+  envelope.classList.add('open');
+  setTimeout(()=>{
+    letterPaper.classList.add('show');
+    envelopeHint.textContent = 'para ler novamente, é só rolar até aqui';
+    letterPaper.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 500);
+});
+
+// ================= MOTIVOS =================
+const reasonsGrid = document.getElementById('reasonsGrid');
+motivos.forEach((texto, i) => {
+  const card = document.createElement('div');
+  card.className = 'reason-card';
+  card.innerHTML = `<span class="reason-num">${String(i+1).padStart(2,'0')}</span><p class="reason-text">${texto}</p>`;
+  reasonsGrid.appendChild(card);
+});
+</script>
+</body>
+</html>
